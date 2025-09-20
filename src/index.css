@@ -85,6 +85,10 @@ All colors MUST be HSL.
 
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+  a[href*="lovable"] {
+   display: none !important;
+   visibility: hidden !important;
+}
 
   /* Dark mode variant (same as root since we default to dark) */
   .dark {

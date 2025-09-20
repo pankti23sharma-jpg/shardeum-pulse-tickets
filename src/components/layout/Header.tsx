@@ -1,7 +1,8 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Home, Wallet, User, Calendar, Ticket } from "lucide-react";
+import { Home, User, Calendar, Ticket } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
+import WalletButton from "@/components/wallet/WalletButton";
 
 const Header = () => {
   const location = useLocation();
@@ -63,10 +64,9 @@ const Header = () => {
 
           {/* Wallet & User Actions */}
           <div className="flex items-center space-x-3">
-            <Button variant="neon" size="sm" className="hidden sm:flex">
-              <Wallet className="w-4 h-4" />
-              Connect Wallet
-            </Button>
+            <div className="hidden sm:block">
+              <WalletButton variant="neon" size="sm" showAddress={true} />
+            </div>
             <Button variant="glass" size="sm">
               <User className="w-4 h-4" />
             </Button>
@@ -92,9 +92,7 @@ const Header = () => {
               <Ticket className="w-4 h-4" />
             </Link>
           </Button>
-          <Button variant="neon" size="sm">
-            <Wallet className="w-4 h-4" />
-          </Button>
+          <WalletButton variant="neon" size="sm" showAddress={false} />
         </div>
       </div>
     </motion.header>

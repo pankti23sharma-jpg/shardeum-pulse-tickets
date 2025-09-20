@@ -196,5 +196,3 @@ For support, questions, or feature requests:
 - Follow us on Twitter
 
 ---
-
-**Made with ❤️ for the Shardeum ecosystem**

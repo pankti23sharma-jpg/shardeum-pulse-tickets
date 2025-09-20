@@ -1,12 +1,17 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Home, User, Calendar, Ticket } from "lucide-react";
+import { Home, User, Calendar, Ticket, LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import WalletButton from "@/components/wallet/WalletButton";
+import AuthModal from "@/components/auth/AuthModal";
+import { useAuth } from "@/hooks/useAuth";
 
 const Header = () => {
   const location = useLocation();
   const isHome = location.pathname === "/";
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { isAuthenticated, user, login, logout } = useAuth();
 
   return (
     <motion.header
@@ -67,9 +72,20 @@ const Header = () => {
             <div className="hidden sm:block">
               <WalletButton variant="neon" size="sm" showAddress={true} />
             </div>
-            <Button variant="glass" size="sm">
-              <User className="w-4 h-4" />
-            </Button>
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground hidden lg:block">
+                  {user?.name}
+                </span>
+                <Button variant="glass" size="sm" onClick={logout} title="Logout">
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button variant="glass" size="sm" onClick={() => setShowAuthModal(true)}>
+                <User className="w-4 h-4" />
+              </Button>
+            )}
           </div>
         </div>
 
@@ -95,6 +111,15 @@ const Header = () => {
           <WalletButton variant="neon" size="sm" showAddress={false} />
         </div>
       </div>
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={(userData) => {
+          login(userData);
+          setShowAuthModal(false);
+        }}
+      />
     </motion.header>
   );
 };

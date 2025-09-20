@@ -1,7 +1,12 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Clock, Users, Ticket } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
+import { Calendar, MapPin, Clock, Ticket, Users } from "lucide-react";
+import AuthModal from "@/components/auth/AuthModal";
+import PurchaseModal from "@/components/ticket/PurchaseModal";
+import { useAuth } from "@/hooks/useAuth";
 
 const sampleEvents = [
   {
@@ -12,8 +17,10 @@ const sampleEvents = [
     location: "Crypto Arena, Los Angeles",
     image: "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=400&h=250&fit=crop",
     price: "0.1 SHM",
+    priceUsd: "$25.00",
+    tier: "VIP",
     attendees: 500,
-    available: 50,
+    ticketsLeft: 50,
   },
   {
     id: 2,
@@ -23,8 +30,10 @@ const sampleEvents = [
     location: "Tech Hub, San Francisco",
     image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=400&h=250&fit=crop",
     price: "0.05 SHM",
+    priceUsd: "$12.50",
+    tier: "General",
     attendees: 300,
-    available: 75,
+    ticketsLeft: 75,
   },
   {
     id: 3,
@@ -34,12 +43,42 @@ const sampleEvents = [
     location: "Modern Gallery, New York",
     image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=250&fit=crop",
     price: "0.03 SHM",
+    priceUsd: "$7.50",
+    tier: "Premium",
     attendees: 150,
-    available: 25,
+    ticketsLeft: 25,
   },
 ];
 
 const Events = () => {
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const { isAuthenticated, login, addTicket } = useAuth();
+  const handlePurchaseClick = (event: any) => {
+    if (!isAuthenticated) {
+      setSelectedEvent(event);
+      setShowAuthModal(true);
+    } else {
+      setSelectedEvent(event);
+      setShowPurchaseModal(true);
+    }
+  };
+
+  const handleAuthSuccess = (userData: any) => {
+    login(userData);
+    setShowAuthModal(false);
+    if (selectedEvent) {
+      setShowPurchaseModal(true);
+    }
+  };
+
+  const handlePurchaseSuccess = (ticketData: any) => {
+    addTicket(ticketData);
+    setShowPurchaseModal(false);
+    setSelectedEvent(null);
+  };
+
   return (
     <div className="min-h-screen pt-24 pb-12">
       <div className="container mx-auto px-4">
@@ -74,9 +113,9 @@ const Events = () => {
                   alt={event.title}
                   className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
                 />
-                <div className="absolute top-4 right-4 glass-card px-3 py-1 text-sm font-medium text-primary">
-                  {event.available} left
-                </div>
+                 <div className="absolute top-4 right-4 glass-card px-3 py-1 text-sm font-medium text-primary">
+                   {event.ticketsLeft} left
+                 </div>
               </div>
 
               <div className="space-y-3">
@@ -103,17 +142,20 @@ const Events = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-border">
-                  <div className="text-2xl font-bold text-primary">
-                    {event.price}
-                  </div>
-                  <Button variant="hero" size="sm" asChild>
-                    <Link to={`/event/${event.id}`}>
-                      <Ticket className="w-4 h-4" />
-                      Get Tickets
-                    </Link>
-                  </Button>
-                </div>
+                 <div className="flex items-center justify-between pt-4 border-t border-border">
+                   <div className="text-2xl font-bold text-primary">
+                     {event.price}
+                   </div>
+                   <Button 
+                     variant="neon" 
+                     size="sm" 
+                     className="flex-1 max-w-32"
+                     onClick={() => handlePurchaseClick(event)}
+                   >
+                     <Ticket className="w-4 h-4" />
+                     Buy Ticket
+                   </Button>
+                 </div>
               </div>
             </motion.div>
           ))}
@@ -128,10 +170,23 @@ const Events = () => {
           <Button variant="glass" size="lg">
             Load More Events
           </Button>
-        </motion.div>
-      </div>
-    </div>
-  );
-};
+         </motion.div>
+       </div>
+
+       <AuthModal
+         isOpen={showAuthModal}
+         onClose={() => setShowAuthModal(false)}
+         onSuccess={handleAuthSuccess}
+       />
+
+       <PurchaseModal
+         isOpen={showPurchaseModal}
+         onClose={() => setShowPurchaseModal(false)}
+         event={selectedEvent}
+         onSuccess={handlePurchaseSuccess}
+       />
+     </div>
+   );
+ };
 
 export default Events;

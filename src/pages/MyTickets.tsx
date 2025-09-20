@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { QrCode, Send, Eye, Calendar, MapPin, Ticket } from "lucide-react";
 import Scene3D from "@/components/3d/Scene3D";
+import { useAuth } from "@/hooks/useAuth";
+import AuthModal from "@/components/auth/AuthModal";
+import { useState } from "react";
 
 const sampleTickets = [
   {
@@ -44,6 +47,9 @@ const sampleTickets = [
 ];
 
 const MyTickets = () => {
+  const { isAuthenticated, getUserTickets, login } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const userTickets = getUserTickets();
   return (
     <div className="min-h-screen pt-24 pb-12">
       <div className="container mx-auto px-4">
@@ -63,7 +69,24 @@ const MyTickets = () => {
           </p>
         </motion.div>
 
-        {sampleTickets.length === 0 ? (
+        {!isAuthenticated ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center py-16"
+          >
+            <div className="w-32 h-32 mx-auto mb-8 opacity-50">
+              <Scene3D enableControls={false} />
+            </div>
+            <h3 className="text-2xl font-semibold mb-4">Please sign in</h3>
+            <p className="text-muted-foreground mb-8">
+              Sign in to view your NFT tickets and manage your collection
+            </p>
+            <Button variant="neon" size="lg" onClick={() => setShowAuthModal(true)}>
+              Sign In
+            </Button>
+          </motion.div>
+        ) : userTickets.length === 0 ? (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -82,9 +105,9 @@ const MyTickets = () => {
           </motion.div>
         ) : (
           <div className="grid lg:grid-cols-2 xl:grid-cols-3 gap-8">
-            {sampleTickets.map((ticket, index) => (
+            {userTickets.map((ticket, index) => (
               <motion.div
-                key={ticket.id}
+                key={ticket.tokenId}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
@@ -130,7 +153,7 @@ const MyTickets = () => {
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Ticket className="w-4 h-4 text-accent" />
-                      {ticket.seat}
+                      {ticket.tier}
                     </div>
                   </div>
 
@@ -160,26 +183,14 @@ const MyTickets = () => {
           </div>
         )}
 
-        {/* Wallet Connection Status */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center mt-12"
-        >
-          <div className="glass-card p-6 max-w-md mx-auto">
-            <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Ticket className="w-6 h-6 text-primary" />
-            </div>
-            <h3 className="font-semibold mb-2">Connect Your Wallet</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              Connect your wallet to view your actual NFT tickets
-            </p>
-            <Button variant="neon" size="sm">
-              Connect Wallet
-            </Button>
-          </div>
-        </motion.div>
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onSuccess={(userData) => {
+            login(userData);
+            setShowAuthModal(false);
+          }}
+        />
       </div>
     </div>
   );
